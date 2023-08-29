@@ -2,7 +2,7 @@
 const product = {
   name: "Membership",
   type: "PHYSICAL",
-  id: "1693308636C", // When you create products, this id always has to be unique.
+  id: "1693308636D", // When you create products, this id always has to be unique.
   description: "Country Club",
   category: "BUSINESS",
   image_url: "https://example.com/gallary/images/1693308636.jpg",

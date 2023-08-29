@@ -51,7 +51,7 @@ const createProduct = async (payload) => {
     method: "POST",
     headers: {
       "Content-Type": "application/json",
-      "PayPal-Request-Id": "devrel-subscription-plan-C",
+      "PayPal-Request-Id": "devrel-subscription-plan-D",
       Authorization: `Bearer ${accessToken}`,
     },
     body: JSON.stringify(payload),
@@ -138,7 +138,7 @@ const createPlan = async (product) => {
     method: "POST",
     headers: {
       "Content-Type": "application/json",
-      "PayPal-Request-Id": "devrel-subscription-plan-C", //has to match the Request Id of the product you created
+      "PayPal-Request-Id": "devrel-subscription-plan-D", //has to match the Request Id of the product you created
       Authorization: `Bearer ${accessToken}`,
     },
     body: JSON.stringify(payload),
