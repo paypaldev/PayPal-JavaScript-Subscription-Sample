@@ -1,15 +1,15 @@
 // Sample Data
 const product = {
-  name: "T-Shirt",
+  name: "Membership",
   type: "PHYSICAL",
-  id: "16933086362", // When you create products, this id always has to be unique.
-  description: "Cotton XL",
-  category: "CLOTHING",
+  id: "1693308636C", // When you create products, this id always has to be unique.
+  description: "Country Club",
+  category: "BUSINESS",
   image_url: "https://example.com/gallary/images/1693308636.jpg",
   home_url: "https://example.com/catalog/1693308636.jpg",
 };
 
-const createProduct = async () => {
+const createProduct = async (product) => {
   try {
     const response = await fetch("/api/catalogs/products", {
       method: "POST",
@@ -51,7 +51,7 @@ const createPlan = async (product) => {
 
 const createProductButton = document
   .getElementById("createProduct")
-  .addEventListener("click", createProduct);
+  .addEventListener("click", ()=>createProduct(product));
 const createPlanButton = document
   .getElementById("createPlan")
   .addEventListener("click", () => createPlan(product));
