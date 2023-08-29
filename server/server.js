@@ -41,72 +41,112 @@ const generateAccessToken = async () => {
 };
 
 /**
- * Create an order to start the transaction.
- * @see https://developer.paypal.com/docs/api/orders/v2/#orders_create
+ * Create a product for you catalog.
+ * @see https://developer.paypal.com/docs/api/catalog-products/v1/#products_create
  */
-const createOrder = async (cart) => {
-  // use the cart information passed from the front-end to calculate the purchase unit details
-  console.log(
-    "shopping cart information passed from the frontend createOrder() callback:",
-    cart,
-  );
-
+const createProduct = async (payload) => {
+  const url = `${base}/v1/catalogs/products`;
   const accessToken = await generateAccessToken();
-  const url = `${base}/v2/checkout/orders`;
+  const response = await fetch(url, {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+      "PayPal-Request-Id": "devrel-subscription-plan-1",
+      Authorization: `Bearer ${accessToken}`,
+    },
+    body: JSON.stringify(payload),
+  });
+
+  return handleResponse(response);
+};
+/**
+ * Create a subscription plan.
+ * @see https://developer.paypal.com/docs/api/subscriptions/v1/#plans_create
+ */
+const createPlan = async (product) => {
+  const url = `${base}/v1/billing/plans`;
+  const accessToken = await generateAccessToken();
   const payload = {
-    intent: "CAPTURE",
-    purchase_units: [
+    product_id: product.id,
+    name: product.name,
+    description: product.description,
+    status: "ACTIVE",
+    billing_cycles: [
       {
-        amount: {
-          currency_code: "USD",
-          value: "100.00",
+        frequency: {
+          interval_unit: "MONTH",
+          interval_count: 1,
+        },
+        tenure_type: "TRIAL",
+        sequence: 1,
+        total_cycles: 2,
+        pricing_scheme: {
+          fixed_price: {
+            value: "3",
+            currency_code: "USD",
+          },
+        },
+      },
+      {
+        frequency: {
+          interval_unit: "MONTH",
+          interval_count: 1,
+        },
+        tenure_type: "TRIAL",
+        sequence: 2,
+        total_cycles: 3,
+        pricing_scheme: {
+          fixed_price: {
+            value: "6",
+            currency_code: "USD",
+          },
+        },
+      },
+      {
+        frequency: {
+          interval_unit: "MONTH",
+          interval_count: 1,
+        },
+        tenure_type: "REGULAR",
+        sequence: 3,
+        total_cycles: 12,
+        pricing_scheme: {
+          fixed_price: {
+            value: "10",
+            currency_code: "USD",
+          },
         },
       },
     ],
+    payment_preferences: {
+      auto_bill_outstanding: true,
+      setup_fee: {
+        value: "10",
+        currency_code: "USD",
+      },
+      setup_fee_failure_action: "CONTINUE",
+      payment_failure_threshold: 3,
+    },
+    taxes: {
+      percentage: "10",
+      inclusive: false,
+    },
   };
 
   const response = await fetch(url, {
+    method: "POST",
     headers: {
       "Content-Type": "application/json",
+      "PayPal-Request-Id": "devrel-subscription-plan-1",
       Authorization: `Bearer ${accessToken}`,
-      // Uncomment one of these to force an error for negative testing (in sandbox mode only). Documentation:
-      // https://developer.paypal.com/tools/sandbox/negative-testing/request-headers/
-      // "PayPal-Mock-Response": '{"mock_application_codes": "MISSING_REQUIRED_PARAMETER"}'
-      // "PayPal-Mock-Response": '{"mock_application_codes": "PERMISSION_DENIED"}'
-      // "PayPal-Mock-Response": '{"mock_application_codes": "INTERNAL_SERVER_ERROR"}'
     },
-    method: "POST",
     body: JSON.stringify(payload),
   });
 
   return handleResponse(response);
 };
 
-/**
- * Capture payment for the created order to complete the transaction.
- * @see https://developer.paypal.com/docs/api/orders/v2/#orders_capture
- */
-const captureOrder = async (orderID) => {
-  const accessToken = await generateAccessToken();
-  const url = `${base}/v2/checkout/orders/${orderID}/capture`;
-
-  const response = await fetch(url, {
-    method: "POST",
-    headers: {
-      "Content-Type": "application/json",
-      Authorization: `Bearer ${accessToken}`,
-      // Uncomment one of these to force an error for negative testing (in sandbox mode only). Documentation:
-      // https://developer.paypal.com/tools/sandbox/negative-testing/request-headers/
-      // "PayPal-Mock-Response": '{"mock_application_codes": "INSTRUMENT_DECLINED"}'
-      // "PayPal-Mock-Response": '{"mock_application_codes": "TRANSACTION_REFUSED"}'
-      // "PayPal-Mock-Response": '{"mock_application_codes": "INTERNAL_SERVER_ERROR"}'
-    },
-  });
-
-  return handleResponse(response);
-};
-
-async function handleResponse(response) {
+const handleResponse = async (response) => {
   try {
     const jsonResponse = await response.json();
     return {
@@ -117,13 +157,11 @@ async function handleResponse(response) {
     const errorMessage = await response.text();
     throw new Error(errorMessage);
   }
-}
+};
 
-app.post("/api/orders", async (req, res) => {
+app.post("/api/catalogs/products", async (req, res) => {
   try {
-    // use the cart information passed from the front-end to calculate the order amount detals
-    const { cart } = req.body;
-    const { jsonResponse, httpStatusCode } = await createOrder(cart);
+    const { jsonResponse, httpStatusCode } = await createProduct(req.body);
     res.status(httpStatusCode).json(jsonResponse);
   } catch (error) {
     console.error("Failed to create order:", error);
@@ -131,14 +169,13 @@ app.post("/api/orders", async (req, res) => {
   }
 });
 
-app.post("/api/orders/:orderID/capture", async (req, res) => {
+app.post("/api/billing/plans", async (req, res) => {
   try {
-    const { orderID } = req.params;
-    const { jsonResponse, httpStatusCode } = await captureOrder(orderID);
+    const { jsonResponse, httpStatusCode } = await createPlan(req.body);
     res.status(httpStatusCode).json(jsonResponse);
   } catch (error) {
     console.error("Failed to create order:", error);
-    res.status(500).json({ error: "Failed to capture order." });
+    res.status(500).json({ error: "Failed to create order." });
   }
 });
 

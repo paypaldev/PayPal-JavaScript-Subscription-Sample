@@ -1,96 +1,75 @@
-window.paypal
-  .Buttons({
-    style: {
-      shape: 'rect',
-      //color:'blue', change the default color of the buttons
-      layout: 'vertical', //default value. Can be changed to horizontal
-    },
-    async createOrder() {
-      try {
-        const response = await fetch("/api/orders", {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-          },
-          // use the "body" param to optionally pass additional order information
-          // like product ids and quantities
-          body: JSON.stringify({
-            cart: [
-              {
-                id: "YOUR_PRODUCT_ID",
-                quantity: "YOUR_PRODUCT_QUANTITY",
-              },
-            ],
-          }),
+// Sample Data
+const product = {
+  name: "T-Shirt",
+  type: "PHYSICAL",
+  id: "16933086362", // When you create products, this id always has to be unique.
+  description: "Cotton XL",
+  category: "CLOTHING",
+  image_url: "https://example.com/gallary/images/1693308636.jpg",
+  home_url: "https://example.com/catalog/1693308636.jpg",
+};
+
+const createProduct = async () => {
+  try {
+    const response = await fetch("/api/catalogs/products", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify(product),
+    });
+    const productData = await response.json();
+    resultMessage(`Product created succesfully...<br><br>`);
+    console.log(productData);
+  } catch (error) {
+    console.error(error);
+    resultMessage(`Could not initiate PayPal Checkout...<br><br>${error}`);
+  }
+};
+
+const createPlan = async (product) => {
+  try {
+    const response = await fetch("/api/billing/plans", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify(product),
+    });
+    const { id } = await response.json();
+    if (id) {
+      resultMessage(`Subcription Plan created succesfully...<br><br>`);
+      renderPayPalButtons(id);
+    } else {
+      throw new Error();
+    }
+  } catch (error) {
+    console.error(error);
+    resultMessage(`Could not create PayPal Subscription...<br><br>${error}`);
+  }
+};
+
+const createProductButton = document
+  .getElementById("createProduct")
+  .addEventListener("click", createProduct);
+const createPlanButton = document
+  .getElementById("createPlan")
+  .addEventListener("click", () => createPlan(product));
+
+const renderPayPalButtons = (planId) => {
+  window.paypal
+    .Buttons({
+      createSubscription: function (data, actions) {
+        return actions.subscription.create({
+          plan_id: planId, // Creates the subscription
         });
-
-        const orderData = await response.json();
-
-        if (orderData.id) {
-          return orderData.id;
-        } else {
-          const errorDetail = orderData?.details?.[0];
-          const errorMessage = errorDetail
-            ? `${errorDetail.issue} ${errorDetail.description} (${orderData.debug_id})`
-            : JSON.stringify(orderData);
-
-          throw new Error(errorMessage);
-        }
-      } catch (error) {
-        console.error(error);
-        resultMessage(`Could not initiate PayPal Checkout...<br><br>${error}`);
-      }
-    },
-    async onApprove(data, actions) {
-      try {
-        const response = await fetch(`/api/orders/${data.orderID}/capture`, {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-          },
-        });
-
-        const orderData = await response.json();
-        // Three cases to handle:
-        //   (1) Recoverable INSTRUMENT_DECLINED -> call actions.restart()
-        //   (2) Other non-recoverable errors -> Show a failure message
-        //   (3) Successful transaction -> Show confirmation or thank you message
-
-        const errorDetail = orderData?.details?.[0];
-
-        if (errorDetail?.issue === "INSTRUMENT_DECLINED") {
-          // (1) Recoverable INSTRUMENT_DECLINED -> call actions.restart()
-          // recoverable state, per https://developer.paypal.com/docs/checkout/standard/customize/handle-funding-failures/
-          return actions.restart();
-        } else if (errorDetail) {
-          // (2) Other non-recoverable errors -> Show a failure message
-          throw new Error(`${errorDetail.description} (${orderData.debug_id})`);
-        } else if (!orderData.purchase_units) {
-          throw new Error(JSON.stringify(orderData));
-        } else {
-          // (3) Successful transaction -> Show confirmation or thank you message
-          // Or go to another URL:  actions.redirect('thank_you.html');
-          const transaction =
-            orderData?.purchase_units?.[0]?.payments?.captures?.[0] ||
-            orderData?.purchase_units?.[0]?.payments?.authorizations?.[0];
-          resultMessage(
-            `Transaction ${transaction.status}: ${transaction.id}<br><br>See console for all available details`,
-          );
-          console.log(
-            "Capture result",
-            orderData,
-            JSON.stringify(orderData, null, 2),
-          );
-        }
-      } catch (error) {
-        console.error(error);
-        resultMessage(
-          `Sorry, your transaction could not be processed...<br><br>${error}`,
-        );
-      }
-    },
-  })
-  .render("#paypal-button-container");
+      },
+      onApprove: function (data, actions) {
+        resultMessage("You have successfully subscribed to " + data.subscriptionID); // Optional message given to subscriber
+      },
+    })
+    .render("#paypal-button-container"); // Renders the PayPal button
+};
 
 // Example function to show a result to the user. Your site's UI library can be used instead.
 function resultMessage(message) {
