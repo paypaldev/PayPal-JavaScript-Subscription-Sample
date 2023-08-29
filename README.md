@@ -18,15 +18,15 @@
   <hr />
 </div>
 
-# PayPal JavasScript (NodeJS) FullStack Standard Checkout
+# PayPal JavasScript (NodeJS) Subscription
 
-This sample app shows you how to integrate PayPal into your JavasScript app for the [standard checkout](https://developer.paypal.com/docs/checkout/standard/integrate/) workflow.
+WIP
 
 ## Run this project
 
 ### PayPal Codespaces
 
-[![Open Code In GitHub Codespaces](https://github.com/codespaces/badge.svg)](https://codespaces.new/paypaldev/PayPal-JavaScript-FullStack-Standard-Checkout-Sample?devcontainer_path=.devcontainer%2Fdevcontainer.json)
+WIP
 
 ### Locally
 
