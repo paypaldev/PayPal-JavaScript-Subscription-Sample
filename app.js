@@ -6,7 +6,8 @@ window.paypal
     .Buttons({
       createSubscription: function (data, actions) {
         return actions.subscription.create({
-          plan_id: planId, // The plan id comes from your subscription plan.
+          // Replace this pland id with your own plan id. The plan id comes from your subscription plan.
+          plan_id: "P-1YF851708F902354HMTW66HI",
         });
       },
       onApprove: function (data, actions) {

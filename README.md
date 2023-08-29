@@ -36,25 +36,17 @@ This repo has two branches:
 
 [![Open Code In GitHub Codespaces](https://github.com/codespaces/badge.svg)](https://codespaces.new/paypaldev/PayPal-JavaScript-Subscription-Sample?devcontainer_path=.devcontainer%2Fdevcontainer.json)
 
-- Rename the ``.env.example`` file to `.env`.
-- Add your environment variables in the `.env` file.
+- In the `app.js` replace the pland id with your own plan id. The plan id comes from your subscription plan.
 
 ### Locally
 
-In your terminal run:
+Open the `checkout.html` file in your browser.
 
-`npm start` and navigate to [http://localhost:8888/](http://localhost:8888/).
+- In the `app.js` replace the pland id with your own plan id. The plan id comes from your subscription plan.
 
 ### Frontend
 
-- Open the `checkout.html` and resplace the `test` string in the script tag with your PayPal Client ID.
-
-### Backend
-
-- Rename the `.env.example` file to `.env`.
-- Inside of the `.env` file, enter your PayPal _client ID_ for the `PAYPAL_CLIENT_ID` and your PayPal _app secret_ for the `PAYPAL_CLIENT_SECRET` enviroment variables.
-- Run `npm install` in your terminal
-- Run `npm start` in your terminal
+- Open the `checkout.html` and replace the `test` string in the script tag with your PayPal Client ID.
 
 ## PayPal Developer Community
 
