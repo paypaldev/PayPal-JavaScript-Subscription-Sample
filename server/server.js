@@ -46,10 +46,10 @@ const generateAccessToken = async () => {
 };
 
 /**
- * Create a product for you catalog.
- * @see https://developer.paypal.com/docs/api/catalog-products/v1/#products_create
+ * Create a subscription for the customer
+ * @see https://developer.paypal.com/docs/api/subscriptions/v1/#subscriptions_create
  */
-const createSubscription = async () => {
+const createSubscription = async (userAction = "SUBSCRIBE_NOW") => {
   const url = `${base}/v1/billing/subscriptions`;
   const accessToken = await generateAccessToken();
   const response = await fetch(url, {
@@ -62,26 +62,10 @@ const createSubscription = async () => {
     },
     body: JSON.stringify({
       plan_id: PLAN_ID,
+      application_context: {
+        user_action: userAction,
+      },
     }),
-  });
-
-  return handleResponse(response);
-};
-/**
- * Create a subscription plan.
- * @see https://developer.paypal.com/docs/api/subscriptions/v1/#plans_create
- */
-const activateSubscription = async ({subscriptionId}) => {
-  console.log('SUB ID', subscriptionId);
-  const url = `${base}/v1/billing/subscriptions/${subscriptionId}/activate`;
-  const accessToken = await generateAccessToken();
-  const response = await fetch(url, {
-    method: "POST",
-    headers: {
-      "Content-Type": "application/json",
-      Authorization: `Bearer ${accessToken}`,
-    },
-    body: JSON.stringify({ reason: "Reactivating the subscription" }),
   });
 
   return handleResponse(response);
@@ -103,16 +87,6 @@ const handleResponse = async (response) => {
 app.post("/api/paypal/create-subscription", async (req, res) => {
   try {
     const { jsonResponse, httpStatusCode } = await createSubscription();
-    res.status(httpStatusCode).json(jsonResponse);
-  } catch (error) {
-    console.error("Failed to create order:", error);
-    res.status(500).json({ error: "Failed to create order." });
-  }
-});
-
-app.post("/api/paypal/activate-subscription", async (req, res) => {
-  try {
-    const { jsonResponse, httpStatusCode } = await activateSubscription(req.body);
     res.status(httpStatusCode).json(jsonResponse);
   } catch (error) {
     console.error("Failed to create order:", error);

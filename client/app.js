@@ -1,13 +1,13 @@
 window.paypal
   .Buttons({
-    async createSubscription(data, actions) {
+    async createSubscription() {
       try {
         const response = await fetch("/api/paypal/create-subscription", {
           method: "POST",
           headers: {
             "Content-Type": "application/json",
           },
-          body: JSON.stringify({ userAction: "CONTINUE" }),
+          body: JSON.stringify({ userAction: "SUBSCRIBE_NOW" }),
         });
         const data = await response.json();
         if (data?.id) {
@@ -35,27 +35,17 @@ window.paypal
         );
       }
     },
-    async onApprove(data) {
-      try {
-        const response = await fetch("/api/paypal/activate-subscription", {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-          },
-          body: JSON.stringify({
-            subscriptionId: data.subscriptionID,
-          }),
-        });
-        const { status } = await response.json();
-        if (status === "ok") {
-          resultMessage(
-            `You have successfully subscribed to the plan. Your subscription id is: ${data.subscriptionID}`,
-          );
-        } else {
-          throw new Error();
-        }
-      } catch (error) {
-        console.error(error);
+    onApprove(data) {
+      /*
+        No need to activate manually since  SUBSCRIBE_NOW is being used.
+        Leanr how to handle other user actions from our docs:
+        https://developer.paypal.com/docs/api/subscriptions/v1/#subscriptions_create
+      */
+      if (data.orderID) {
+        resultMessage(
+          `You have successfully subscribed to the plan. Your subscription id is: ${data.subscriptionID}`,
+        );
+      } else {
         resultMessage(
           `Failed to activate the subscription: ${data.subscriptionID}`,
         );
