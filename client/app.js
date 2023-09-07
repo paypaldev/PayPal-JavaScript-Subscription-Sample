@@ -37,7 +37,7 @@ window.paypal
     },
     onApprove(data) {
       /*
-        No need to activate manually since  SUBSCRIBE_NOW is being used.
+        No need to activate manually since SUBSCRIBE_NOW is being used.
         Learn how to handle other user actions from our docs:
         https://developer.paypal.com/docs/api/subscriptions/v1/#subscriptions_create
       */
