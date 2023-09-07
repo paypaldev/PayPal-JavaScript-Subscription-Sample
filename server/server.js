@@ -3,7 +3,12 @@ import fetch from "node-fetch";
 import "dotenv/config";
 import path from "path";
 
-const { PAYPAL_CLIENT_ID, PAYPAL_CLIENT_SECRET, PORT = 8888 } = process.env;
+const {
+  PAYPAL_CLIENT_ID,
+  PAYPAL_CLIENT_SECRET,
+  PLAN_ID,
+  PORT = 8888,
+} = process.env;
 const base = "https://api-m.sandbox.paypal.com";
 const app = express();
 
@@ -44,17 +49,20 @@ const generateAccessToken = async () => {
  * Create a product for you catalog.
  * @see https://developer.paypal.com/docs/api/catalog-products/v1/#products_create
  */
-const createProduct = async (payload) => {
-  const url = `${base}/v1/catalogs/products`;
+const createSubscription = async () => {
+  const url = `${base}/v1/billing/subscriptions`;
   const accessToken = await generateAccessToken();
   const response = await fetch(url, {
     method: "POST",
     headers: {
       "Content-Type": "application/json",
-      "PayPal-Request-Id": "devrel-subscription-plan-D",
       Authorization: `Bearer ${accessToken}`,
+      Accept: "application/json",
+      Prefer: "return=representation",
     },
-    body: JSON.stringify(payload),
+    body: JSON.stringify({
+      plan_id: PLAN_ID,
+    }),
   });
 
   return handleResponse(response);
@@ -63,85 +71,17 @@ const createProduct = async (payload) => {
  * Create a subscription plan.
  * @see https://developer.paypal.com/docs/api/subscriptions/v1/#plans_create
  */
-const createPlan = async (product) => {
-
-  const url = `${base}/v1/billing/plans`;
+const activateSubscription = async ({subscriptionId}) => {
+  console.log('SUB ID', subscriptionId);
+  const url = `${base}/v1/billing/subscriptions/${subscriptionId}/activate`;
   const accessToken = await generateAccessToken();
-  const payload = {
-    product_id: product.id,
-    name: product.name,
-    description: product.description,
-    status: "ACTIVE",
-    billing_cycles: [
-      {
-        frequency: {
-          interval_unit: "MONTH",
-          interval_count: 1,
-        },
-        tenure_type: "TRIAL",
-        sequence: 1,
-        total_cycles: 2,
-        pricing_scheme: {
-          fixed_price: {
-            value: "3",
-            currency_code: "USD",
-          },
-        },
-      },
-      {
-        frequency: {
-          interval_unit: "MONTH",
-          interval_count: 1,
-        },
-        tenure_type: "TRIAL",
-        sequence: 2,
-        total_cycles: 3,
-        pricing_scheme: {
-          fixed_price: {
-            value: "6",
-            currency_code: "USD",
-          },
-        },
-      },
-      {
-        frequency: {
-          interval_unit: "MONTH",
-          interval_count: 1,
-        },
-        tenure_type: "REGULAR",
-        sequence: 3,
-        total_cycles: 12,
-        pricing_scheme: {
-          fixed_price: {
-            value: "10",
-            currency_code: "USD",
-          },
-        },
-      },
-    ],
-    payment_preferences: {
-      auto_bill_outstanding: true,
-      setup_fee: {
-        value: "10",
-        currency_code: "USD",
-      },
-      setup_fee_failure_action: "CONTINUE",
-      payment_failure_threshold: 3,
-    },
-    taxes: {
-      percentage: "10",
-      inclusive: false,
-    },
-  };
-
   const response = await fetch(url, {
     method: "POST",
     headers: {
       "Content-Type": "application/json",
-      "PayPal-Request-Id": "devrel-subscription-plan-D", //has to match the Request Id of the product you created
       Authorization: `Bearer ${accessToken}`,
     },
-    body: JSON.stringify(payload),
+    body: JSON.stringify({ reason: "Reactivating the subscription" }),
   });
 
   return handleResponse(response);
@@ -160,9 +100,9 @@ const handleResponse = async (response) => {
   }
 };
 
-app.post("/api/catalogs/products", async (req, res) => {
+app.post("/api/paypal/create-subscription", async (req, res) => {
   try {
-    const { jsonResponse, httpStatusCode } = await createProduct(req.body);
+    const { jsonResponse, httpStatusCode } = await createSubscription();
     res.status(httpStatusCode).json(jsonResponse);
   } catch (error) {
     console.error("Failed to create order:", error);
@@ -170,9 +110,9 @@ app.post("/api/catalogs/products", async (req, res) => {
   }
 });
 
-app.post("/api/billing/plans", async (req, res) => {
+app.post("/api/paypal/activate-subscription", async (req, res) => {
   try {
-    const { jsonResponse, httpStatusCode } = await createPlan(req.body);
+    const { jsonResponse, httpStatusCode } = await activateSubscription(req.body);
     res.status(httpStatusCode).json(jsonResponse);
   } catch (error) {
     console.error("Failed to create order:", error);
