@@ -22,11 +22,6 @@
 
 This sample app shows how to build and customize a subscripton payment. To learn more about the steps to create an app with subscriptions follow [this](https://developer.paypal.com/docs/subscriptions/) instructions.
 
-This repo has two branches:
-
-- Main: You will only find the minimal development for integration the subscription buttons into your webn application.
-- Advanced: You will find a more advanced version of the Main branch. In this branch we have added two buttons. These buttons make API calls to the PayPal REST APIs to create a product and a subscription plan.
-
 **Notes:**
 
 - Every time you create a new product, the product id needs to be different.
