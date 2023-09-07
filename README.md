@@ -22,11 +22,13 @@
 
 This sample app shows how to build and customize a subscripton payment. To learn more about the steps to create an app with subscriptions follow [this](https://developer.paypal.com/docs/subscriptions/) instructions.
 
-This repo has two branches: 
+This repo has two branches:
+
 - Main: You will only find the minimal development for integration the subscription buttons into your webn application.
 - Advanced: You will find a more advanced version of the Main branch. In this branch we have added two buttons. These buttons make API calls to the PayPal REST APIs to create a product and a subscription plan.
 
 **Notes:**
+
 - Every time you create a new product, the product id needs to be different.
 - The "PayPal-Request-Id" for the create product and create plan needs to be the same.
 
@@ -36,6 +38,8 @@ This repo has two branches:
 
 [![Open Code In GitHub Codespaces](https://github.com/codespaces/badge.svg)](https://codespaces.new/paypaldev/PayPal-JavaScript-Subscription-Sample?devcontainer_path=.devcontainer%2Fdevcontainer.json)
 
+- Rename the `.env.example` file to `.env`.
+- Add your environment variables in the `.env` file.
 - In the `app.js` replace the pland id with your own plan id. The plan id comes from your subscription plan.
 
 ### Locally
